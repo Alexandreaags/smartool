@@ -1,43 +1,46 @@
 import serial
-from time import sleep
+import time
+
 
 ser = serial.Serial('COM6', 115200)
 
-# Limite de aceleração para considerar como produção de peça
-# acel_limit = 9.0  # Ajuste este valor conforme necessário
-# piece_count = 0
-# accel_values = []
-# prev_x_accel = 0.0
-# accel_threshold = 0.5 
+accel_interval = 2  # Intervalo de tempo em segundos para coletar dados de aceleração
+accel_threshold = 2.7 # Ajuste este valor conforme necessário
+
+
+
+
+class acc_reader():
+
+    def read_acceleration(self):
+        self.x_accel = []
+        while True:
+            line = ser.readline()  # Recebe os bytes diretamente
+            try:
+                values = line.decode('latin-1').strip().split()
+                if len(values) == 3:
+                    self.x_accel = float(values[0])
+                    return self.x_accel
+            except UnicodeDecodeError:
+                pass  # Ignora os bytes que não podem ser decodificados
+
 try:
+    acc = acc_reader()
+    part_count = 0
+    part_detected = False
+
     while True:
-        line = ser.readline().decode()
-        # print(line)
-        values = line.strip().split()
-        if len(values) == 3:
-            x_accel = float(values[0])
-            # y_accel = float(values[1])
-            # z_accel = float(values[2])
-            print(x_accel)#, y_accel, z_accel)
-            #sleep(.5)
-            #accel_values.append([x_accel, y_accel, z_accel])
-            # x_accel_change = abs(x_accel - prev_x_accel)
-            # if x_accel_change > accel_threshold:
-            #     piece_count += 1
-            #     sleep(1)
-            #     print("Piece manufactured!")
-            # prev_x_accel = x_accel
-        # print(line[16:-6])
-        # x_accel = float(line[2:-15])
-        # y_accel = float(line[-15:-7])
-        # z_accel = float(line[-7:-1])
-        # print(x_accel, y_accel, z_accel)
-        # accel_values.append([x_accel, y_accel, z_accel])
-            
-            # if x_accel > acel_limit:
-            #     piece_count += 1
-            #     print("Peça produzida! Total de peças:", piece_count)
+        print("Running...")
         
+        data = acc.read_acceleration()
+        if data > accel_threshold and not part_detected:
+            print("Mudança de posição detectada no eixo X!")
+            part_detected = True
+            part_count += 1  # Incrementa a contagem de peças
+        
+        if data < accel_threshold:
+            part_detected = False  # Redefine para False quando a posição volta ao normal
+
 except KeyboardInterrupt:
-    #print(f"{piece_count} pieces was manufactured!!")
     ser.close()
+    print("Total de peças produzidas:", part_count)
