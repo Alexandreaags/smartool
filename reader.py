@@ -1,7 +1,7 @@
 import serial
 import time
 
-ser = serial.Serial('COM6', 115200)
+ser = serial.Serial('COM10', 115200) # <------ remember to change the port according to yours
 
 
 x_accel = []
