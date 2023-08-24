@@ -5,13 +5,13 @@ import serial
 ser = serial.Serial('COM10', 115200) # <------ remember to change the port according to yours
 
 
-accel_threshold = 2 # Threshold of the acceleration 
+accel_threshold = 6 # Threshold of the acceleration 
 
 
 class acc_reader():
 
     def read_acceleration(self):
-        self.x_accel = []
+        # self.x_accel = []
         while True:
             line = ser.readline()  # Recebe os bytes diretamente
             try:
@@ -29,15 +29,15 @@ try:
     part_detected = False #Flag to count the part only one time
 
     while True:
-        print("Running...")
+        # print("Running...")
         
         
         data_acc.append(acc.read_acceleration())
         # print(data_acc)
-        data_100 = data_acc[-100:]# separe only the last 100 datas
-        sum_data = sum(data_100)# sum the last 100 datas 
-        mean_data = sum_data/len(data_100)# mean of the last 100 datas
-        # print(mean_data)
+        last_data = data_acc[-30:]# separe only the last 100 datas
+        sum_data = sum(last_data)# sum the last 100 datas 
+        mean_data = sum_data/len(last_data)# mean of the last 100 datas
+        print(mean_data)
 
         if mean_data > accel_threshold and not part_detected:
 
