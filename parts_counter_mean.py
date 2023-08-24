@@ -34,9 +34,9 @@ try:
         
         data_acc.append(acc.read_acceleration())
         # print(data_acc)
-        last_data = data_acc[-30:]# separe only the last 100 datas
-        sum_data = sum(last_data)# sum the last 100 datas 
-        mean_data = sum_data/len(last_data)# mean of the last 100 datas
+        last_datas = data_acc[-30:]# separe only the last datas from the list
+        sum_data = sum(last_datas)# sum the last 100 datas 
+        mean_data = sum_data/len(last_datas)# mean of the last 100 datas
         print(mean_data)
 
         if mean_data > accel_threshold and not part_detected:
