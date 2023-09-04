@@ -1,10 +1,10 @@
 import serial
 
 
-ser = serial.Serial('COM10', 115200) # <------ remember to change the port according to yours
+ser = serial.Serial('COM13', 115200) # <------ remember to change the port according to yours
 
 
-accel_threshold = 2.7 # Threshold of the acceleration 
+accel_threshold = 6 # Threshold of the acceleration 
 
 
 class acc_reader():
@@ -17,7 +17,7 @@ class acc_reader():
                 values = line.decode('latin-1').strip().split() #strip remove blank spaces
                 if len(values) == 3:
                     self.x_accel = float(values[0])
-                    return self.x_accel
+                    return self.x_accel + 9.58
             except UnicodeDecodeError:
                 pass  # Ignora os bytes que não podem ser decodificados
 
@@ -40,4 +40,4 @@ try:
 
 except KeyboardInterrupt:
     ser.close()
-    print("Amount of manufactured parts:", part_count)
+    print("Amount of manufactured parts:", part_count/2)
