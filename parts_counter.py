@@ -38,7 +38,7 @@ try:
             part_count += 1  # counts the parts
         
         if data < accel_threshold:
-            part_detected = False  # Redefine to False when the position is less than threshould 
+            part_detected = False  # Redefine to False when the position is less than threshold 
 
 except KeyboardInterrupt:
     ser.close()
