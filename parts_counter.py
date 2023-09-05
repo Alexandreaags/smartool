@@ -35,10 +35,10 @@ try:
         if data > accel_threshold and not part_detected:
             print("Changing of position detected in X axis!")
             part_detected = True
-            part_count += 1  # Incrementa a contagem de peças
+            part_count += 1  # counts the parts
         
         if data < accel_threshold:
-            part_detected = False  # Redefine para Falso quando a posição volta ao normal
+            part_detected = False  # Redefine to False when the position is less than threshould 
 
 except KeyboardInterrupt:
     ser.close()
