@@ -1,0 +1,16 @@
+User:
+  name: Tassio
+DAQ:
+  name: AnalogDaq
+  port: COM11
+Scan:
+  start: 0V
+  stop: 3.2V
+  num_steps: 100
+  channel_out: 0
+  channel_in: 0
+  delay: 20ms
+  resistance: 2000ohm
+Saving:
+  filename: data.dat
+  folder: C:\Users\tassi\OneDrive\Documentos\Germany\PROJECT_MARTIN\Experiments_Data
