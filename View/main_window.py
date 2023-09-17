@@ -8,6 +8,8 @@ class MainWindow(QMainWindow):
     def __init__(self, experiment=None):
         super().__init__()
 
+        self.scan_data_mag = []
+
         base_dir = os.path.dirname(os.path.abspath(__file__))
         ui_file = os.path.join(base_dir, 'GUI', 'main_window.ui')
         uic.loadUi(ui_file, self)
@@ -16,6 +18,7 @@ class MainWindow(QMainWindow):
 
         self.step_line.setText(str(self.experiment.config['Scan'] ['num_steps']))
         self.delay_line.setText(self.experiment.config['Scan']['delay'])
+        self.sensor_name_box.addItems(self.experiment.sensor)
 
         self.plot_widget = pg.PlotWidget()
         self.plot = self.plot_widget.plot([0],[0])
@@ -42,15 +45,22 @@ class MainWindow(QMainWindow):
             'num_steps': num_steps,
             'delay': delay           
             })
-        self.experiment.start_scan()
+        self.experiment.start_scan(self.sensor_name_box.currentText())
+        print('Scan Started')
 
     def stop_scan(self):
         self.experiment.stop_scan()
         print('Scan Stopped')
 
     def update_plot(self):
-        self.plot.setData(self.experiment.scan_range, 
-                          self.experiment.scan_data)
+        if self.experiment.is_running == True:
+            self.scan_data_mag = []
+            for value in self.experiment.scan_data:
+                mag_value = value.m_as(self.experiment.data_unit)
+                self.scan_data_mag.append(mag_value)
+
+            self.plot.setData(self.experiment.scan_range, 
+                            self.scan_data_mag)
         
     def update_gui(self):
         if self.experiment.is_running:
