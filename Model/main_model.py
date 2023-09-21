@@ -13,9 +13,9 @@ import numpy as np
 ### [1] = ACC_LIS3DH X AXIS // M/S²
 ### [2] = ACC_LIS3DH Y AXIS // M/S²
 ### [3] = ACC_LIS3DH Z AXIS // M/S²
-###
-###
-###
+### [4] = ACC_MPU6050 X AXIS // M/S²
+### [5] = ACC_MPU6050 Y AXIS // M/S²
+### [6] = ACC_MPU6050 Z AXIS // M/S²
 ###
 
 
@@ -28,7 +28,8 @@ class ArduinoNano():
         self.scan_range = [0]                                   #Number of samples
         self.scan_data = [0]                                    #Data of scan
         self.sensor = {
-            "Acc. LIS3DH" : self.acc_scan_LIS3DH
+            "Acc. LIS3DH" : self.acc_scan_LIS3DH,
+            "Acc. MPU6050" : self.acc_scan_MPU6050
         }
         self.data_unit = ''
 
@@ -82,6 +83,44 @@ class ArduinoNano():
                     sleep(delay.m_as('s'))
                 else:                       #when array is full, append a new element, remove the first one and rearrange the positions
                     message = float(self.daq.get_serial_message()[1]) * ur('m/s²')
+                    self.scan_data = np.append(self.scan_data, message)
+                    self.scan_data = self.scan_data[1:]
+                    i += 1
+                    sleep(delay.m_as('s'))
+        except KeyboardInterrupt:
+            self.is_running = False
+            self.keep_running = False
+            return
+        self.is_running = False
+
+    def acc_scan_MPU6050(self):                                         #Scan module used for accelerometer MPU6050
+        if self.is_running == True:
+            print('Scan already running!')
+            return
+        self.is_running = True
+        
+        delay = ur(self.config['Scan']['delay'])
+        num_steps = int(self.config['Scan']['num_steps'])
+        self.scan_data = np.zeros(num_steps) * ur('m/s²')
+        self.data_unit = 'm/s²'
+        self.scan_range = np.linspace(0, num_steps-1, num_steps)
+
+        i = 0
+        counter = 0
+        
+        self.keep_running = True            
+        try:
+            while True:
+                if not self.keep_running:   
+                    break
+                if counter < num_steps:     #getting array of acceleration until values are atributed to all elements of the array
+                    message = float(self.daq.get_serial_message()[4]) * ur('m/s²')
+                    self.scan_data[i] = message
+                    counter += 1
+                    i += 1
+                    sleep(delay.m_as('s'))
+                else:                       #when array is full, append a new element, remove the first one and rearrange the positions
+                    message = float(self.daq.get_serial_message()[4]) * ur('m/s²')
                     self.scan_data = np.append(self.scan_data, message)
                     self.scan_data = self.scan_data[1:]
                     i += 1

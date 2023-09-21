@@ -6,7 +6,7 @@ DAQ:
 Scan:
   start: 0V
   stop: 3.2V
-  num_steps: 100
+  num_steps: 500
   channel_out: 0
   channel_in: 0
   delay: 20ms
