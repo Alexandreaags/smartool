@@ -2,7 +2,7 @@ User:
   name: Tassio
 DAQ:
   name: AnalogDaq
-  port: COM11
+  port: COM13
 Scan:
   start: 0V
   stop: 3.2V

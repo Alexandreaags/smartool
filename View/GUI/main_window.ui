@@ -18,9 +18,19 @@
     <item>
      <widget class="QGroupBox" name="out_group">
       <property name="title">
-       <string>Accelerometer</string>
+       <string>One Variable Sensor</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLabel" name="sensor_name_label">
+         <property name="text">
+          <string>Sensor:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="sensor_name_box"/>
+       </item>
        <item>
         <widget class="QLabel" name="delay_label">
          <property name="text">
@@ -40,38 +50,6 @@
        </item>
        <item>
         <widget class="QLineEdit" name="step_line"/>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QGroupBox" name="in_group">
-      <property name="title">
-       <string>In</string>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QLabel" name="in_channel_label">
-         <property name="text">
-          <string>Channel:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="in_channel_line"/>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>179</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>
