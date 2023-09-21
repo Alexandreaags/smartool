@@ -1,11 +1,24 @@
-#from Smartool.Controller.arduino_nano_daq import Device        #USE THIS FOR REAL ARDUINO AND ACCELEROMETER
-from Smartool.Controller.dummy_daq import Device                #USE THIS FOR TESTING
+from Smartool.Controller.arduino_nano_daq import Device        #USE THIS FOR REAL ARDUINO AND ACCELEROMETER
+#from Smartool.Controller.dummy_daq import Device                #USE THIS FOR TESTING
 import yaml
 import threading
 from time import sleep
-import os
 from Smartool import ur
 import numpy as np
+
+
+### 
+### ADDRESSING OF VARIABLES IN GET.SERIAL.MESSAGE ARRAY
+### [0] = 'A' // CHARACTER USED TO KNOW WHEN A LINE STARTS ON TERMINAL
+### [1] = ACC_LIS3DH X AXIS // M/S²
+### [2] = ACC_LIS3DH Y AXIS // M/S²
+### [3] = ACC_LIS3DH Z AXIS // M/S²
+###
+###
+###
+###
+
+
 
 class ArduinoNano():
     def __init__(self, config_file):
@@ -62,13 +75,13 @@ class ArduinoNano():
                 if not self.keep_running:   
                     break
                 if counter < num_steps:     #getting array of acceleration until values are atributed to all elements of the array
-                    message = self.daq.get_serial_message()[0] * ur('m/s²')
+                    message = float(self.daq.get_serial_message()[1]) * ur('m/s²')
                     self.scan_data[i] = message
                     counter += 1
                     i += 1
                     sleep(delay.m_as('s'))
                 else:                       #when array is full, append a new element, remove the first one and rearrange the positions
-                    message = self.daq.get_serial_message()[0] * ur('m/s²')
+                    message = float(self.daq.get_serial_message()[1]) * ur('m/s²')
                     self.scan_data = np.append(self.scan_data, message)
                     self.scan_data = self.scan_data[1:]
                     i += 1

@@ -24,9 +24,11 @@ class Device():
         sleep(1)
 
     def get_serial_message(self):
+        self.rsc.flushInput()
         line = self.rsc.readline()  # Recebe os bytes diretamente
         values = line.decode('latin-1').strip().split()
-        if values[0] == 'A':
+        if len(values) > 0 and values[0] == 'A':
+            print(values)
             return values
         else:
             return self.get_serial_message()

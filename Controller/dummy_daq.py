@@ -14,7 +14,7 @@ class Device():
         pass
 
     def get_serial_message(self):
-        self.values = [round(rd.uniform(-5, 5), 2), round(rd.uniform(-5, 5), 2), round(rd.uniform(-5, 5), 2)]
+        self.values = ['A', round(rd.uniform(-5, 5), 2), round(rd.uniform(-5, 5), 2), round(rd.uniform(-5, 5), 2)]
         return self.values
 
     def finalize(self):
