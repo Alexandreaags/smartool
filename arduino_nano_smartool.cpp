@@ -1,12 +1,14 @@
-
-// Basic demo for accelerometer readings from Adafruit LIS3DH
-
 #include <Wire.h>
 #include <SPI.h>
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_LIS3DH.h>
 #include <Adafruit_Sensor.h>
+#include <DHT.h>
+#include <DHT_U.h>
 
+// Digital pin connected to the DHT sensor 
+#define DHTPIN 17
+#define DHTTYPE DHT22
 // Used for software SPI
 #define LIS3DH_CLK 13
 #define LIS3DH_MISO 12
@@ -23,6 +25,12 @@ Adafruit_LIS3DH lis = Adafruit_LIS3DH();
 
 Adafruit_MPU6050 mpu;
 
+DHT_Unified dht(DHTPIN, DHTTYPE);
+
+float lastTemp = -100;
+float lastHum = -100;
+int timevar;
+
 // 
 // ADDRESSING OF VARIABLES IN GET.SERIAL.MESSAGE ARRAY
 // [0] = 'A' // CHARACTER USED TO KNOW WHEN A LINE STARTS ON TERMINAL
@@ -32,6 +40,8 @@ Adafruit_MPU6050 mpu;
 // [4] = ACC_MPU6050 X AXIS // M/S²
 // [5] = ACC_MPU6050 Y AXIS // M/S²
 // [6] = ACC_MPU6050 Z AXIS // M/S²
+// [7] = DHT22 TEMPERATURE // °C
+// [8] = DHT22 HUMIDITY // %
 //
 
 void setup(void) {
@@ -39,6 +49,8 @@ void setup(void) {
   ////////////////////////////////////////////////////////////////////////////////////////////
   Serial.begin(115200);
   while (!Serial) delay(10);     // will pause Zero, Leonardo, etc until serial console opens
+
+  dht.begin();
 
   Serial.println("LIS3DH test!");
 
@@ -87,6 +99,8 @@ void setup(void) {
 
   Serial.println("");
   //delay(100);
+
+  timevar = millis();
 }
 
 void loop() {
@@ -97,9 +111,32 @@ void loop() {
   // Serial.print("  \tZ:  "); Serial.print(lis.z);
 
   /* Or....get a new sensor event, normalized */
-  sensors_event_t event, a, g, temp;
+  sensors_event_t event, a, g, temp, dht22;
   lis.getEvent(&event);
   mpu.getEvent(&a, &g, &temp);
+
+  // Temperature and humidity
+  if (millis() - timevar > 2000)
+  {
+    dht.temperature().getEvent(&dht22);
+
+    if (isnan(dht22.temperature)) {
+      lastTemp = -100;
+    }
+    else {
+      lastTemp = dht22.temperature;
+    }
+
+    dht.humidity().getEvent(&dht22);
+
+    if (isnan(dht22.relative_humidity)) {
+      lastHum = -100;
+    }
+    else {
+      lastHum = dht22.relative_humidity;
+    }
+    timevar = millis();
+  }
 
   /* Display the results (acceleration is measured in m/s^2) */
   Serial.print("A");
@@ -115,6 +152,11 @@ void loop() {
   Serial.print(a.acceleration.y);
   Serial.print(" ");
   Serial.print(a.acceleration.z);
+  Serial.print(" ");
+  Serial.print(lastTemp);
+  Serial.print(" ");
+  Serial.print(lastHum);
+  Serial.print(" ");
   
 
   Serial.println("");

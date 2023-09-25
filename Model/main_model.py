@@ -16,6 +16,8 @@ import numpy as np
 ### [4] = ACC_MPU6050 X AXIS // M/S²
 ### [5] = ACC_MPU6050 Y AXIS // M/S²
 ### [6] = ACC_MPU6050 Z AXIS // M/S²
+### [7] = DHT22 TEMPERATURE // °C
+### [8] = DHT22 HUMIDITY // %
 ###
 
 
@@ -130,6 +132,12 @@ class ArduinoNano():
             self.keep_running = False
             return
         self.is_running = False
+
+    def DHT22_temp(self):
+        pass
+
+    def DHT22_hum(self):
+        pass
 
     def start_scan(self, sensor_name):
         self.scan_thread = threading.Thread(target=self.sensor[sensor_name])
