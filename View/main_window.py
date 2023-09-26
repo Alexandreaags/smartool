@@ -25,6 +25,9 @@ class MainWindow(QMainWindow):
         layout = self.central_widget.layout()
         layout.addWidget(self.plot_widget)
         
+        # Set labels for X axis
+        self.plot_widget.setLabel('bottom', text='Samples')
+
         self.start_button.clicked.connect(self.start_scan)
         self.stop_button.clicked.connect(self.stop_scan)
 
@@ -61,6 +64,8 @@ class MainWindow(QMainWindow):
 
             self.plot.setData(self.experiment.scan_range, 
                             self.scan_data_mag)
+            # Set label for Y axis
+            self.plot_widget.setLabel('left', text=self.experiment.data_unit_label)
         
     def update_gui(self):
         if self.experiment.is_running:
