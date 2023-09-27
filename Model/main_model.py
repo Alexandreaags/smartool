@@ -5,6 +5,8 @@ import threading
 from time import sleep
 from Smartool import ur
 import numpy as np
+import os
+from datetime import datetime
 
 
 ### 
@@ -30,7 +32,7 @@ class ArduinoNano():
         self.scan_range = [0]                                   #Number of samples
         self.scan_data = [0]
         self.delay = ''
-        self.num_steps = 0                                    #Data of scan
+        self.num_steps = 0                                      #Data of scan
         self.sensor = {
             "Acc. LIS3DH" : self.acc_scan_LIS3DH,
             "Acc. MPU6050" : self.acc_scan_MPU6050,
@@ -40,6 +42,8 @@ class ArduinoNano():
         self.data_unit = ''
         self.data_unit_label = ''
         self.data_index = 0
+        self.data_title = ''
+        self.array_index_plot = []
 
     def load_config(self):                                      #Module used to open and verify config file
         with open (self.config_file, 'r') as f:
@@ -73,24 +77,21 @@ class ArduinoNano():
         self.num_steps = int(self.config['Scan']['num_steps'])
         self.scan_data = np.zeros(self.num_steps) * ur(self.data_unit)
         self.scan_range = np.linspace(0, self.num_steps-1, self.num_steps)
-
+        self.array_index_plot = np.linspace(-self.num_steps,-1,self.num_steps, dtype=int)
         counter = 0
-        
         self.keep_running = True            
         try:
             while True:
                 if not self.keep_running:   
                     break
+                message = float(self.daq.get_serial_message()[self.data_index]) * ur(self.data_unit)
                 if counter < self.num_steps:     #getting array of acceleration until values are atributed to all elements of the array
-                    message = float(self.daq.get_serial_message()[self.data_index]) * ur(self.data_unit)
-                    self.scan_data[counter] = message
-                    counter += 1
-                    sleep(self.delay.m_as('s'))
-                else:                       #when array is full, append a new element, remove the first one and rearrange the positions
-                    message = float(self.daq.get_serial_message()[self.data_index]) * ur(self.data_unit)
+                    self.scan_data[counter] = message 
+                else:                            #when array is full, append a new element, remove the first one and rearrange the positions
                     self.scan_data = np.append(self.scan_data, message)
-                    self.scan_data = self.scan_data[1:]
-                    sleep(self.delay.m_as('s'))
+                    self.scan_range = np.append(self.scan_range, counter)
+                counter += 1
+                sleep(self.delay.m_as('s'))
         except KeyboardInterrupt:
             self.is_running = False
             self.keep_running = False
@@ -103,7 +104,7 @@ class ArduinoNano():
         self.data_unit_label = 'm/s²'
         self.scan()
 
-    def acc_scan_MPU6050(self):                                         #Scan module used for accelerometer MPU6050
+    def acc_scan_MPU6050(self):                                        #Scan module used for accelerometer MPU6050
         self.data_index = 4
         self.data_unit = 'm/s²'
         self.data_unit_label = 'm/s²'
@@ -124,6 +125,38 @@ class ArduinoNano():
     def start_scan(self, sensor_name):
         self.scan_thread = threading.Thread(target=self.sensor[sensor_name])
         self.scan_thread.start()
+
+    def save_data(self):
+        data_folder = self.config['Saving']['folder']   #set the folder for the experiment to be saved, based on the config file
+        today_folder = f'{datetime.today():%Y-%m-%d}'   #set the name for the folder of the day
+        saving_folder = os.path.join(data_folder, today_folder) #put the path of the today folder in the data folder
+        if not os.path.isdir(saving_folder):    #if there is no today folder yet, create one
+            os.makedirs(saving_folder)
+
+        row1 = []
+        row2 = []
+
+        for i in range(len(self.scan_range)):
+            row1.append(self.scan_range[i])
+        for i in range(len(self.scan_data)):
+            row2.append(self.scan_data[i].m_as(self.data_unit))
+
+
+        data = np.vstack([row1,row2]).T #creates an array with the two other arrays in two collumns
+
+        header = "Scan " + self.data_title + " /// Data in Unit: " + self.data_unit_label  #header of the .bat file
+
+        filename = self.config['Saving']['filename']    #filename of config file
+        base_name = filename.split('.')[0]
+        ext = filename.split('.')[-1]
+        i = 1
+        while os.path.isfile(os.path.join(saving_folder,f'{base_name}_{i:04d}.{ext}')):
+            i += 1
+        data_file = os.path.join(saving_folder, f'{base_name}_{i:04d}.{ext}')
+        metadata_file = os.path.join(saving_folder,f'{base_name}_{i:04d}_metadata.yml')
+        np.savetxt(data_file, data, header=header)
+        with open(metadata_file, 'w') as f:
+            f.write(yaml.dump(self.config, default_flow_style=False))
 
     def stop_scan(self):
         self.keep_running = False

@@ -9,6 +9,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.scan_data_mag = []
+        self.scan_range_mag = []
 
         base_dir = os.path.dirname(os.path.abspath(__file__))
         ui_file = os.path.join(base_dir, 'GUI', 'main_window.ui')
@@ -35,8 +36,6 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self.update_plot)
         self.timer.start(50)
 
-        #self.actionSave.triggered.connect(self.experiment.save_data)
-
         self.timer.timeout.connect(self.update_gui)
 
     def start_scan(self):
@@ -46,23 +45,27 @@ class MainWindow(QMainWindow):
         self.experiment.config['Scan'].update(
             {
             'num_steps': num_steps,
-            'delay': delay           
+            'delay': delay,
             })
+        self.experiment.data_title = self.sensor_name_box.currentText()
         self.experiment.start_scan(self.sensor_name_box.currentText())
         print('Scan Started')
 
     def stop_scan(self):
         self.experiment.stop_scan()
         print('Scan Stopped')
+        self.experiment.save_data()
+        print('Data Saved')
 
     def update_plot(self):
         if self.experiment.is_running == True:
             self.scan_data_mag = []
-            for value in self.experiment.scan_data:
-                mag_value = value.m_as(self.experiment.data_unit)
-                self.scan_data_mag.append(mag_value)
+            self.scan_range_mag = []
+            for i in self.experiment.array_index_plot:
+                self.scan_data_mag.append(self.experiment.scan_data[i].m_as(self.experiment.data_unit))
+                self.scan_range_mag.append(self.experiment.scan_range[i])
 
-            self.plot.setData(self.experiment.scan_range, 
+            self.plot.setData(self.scan_range_mag, 
                             self.scan_data_mag)
             # Set label for Y axis
             self.plot_widget.setLabel('left', text=self.experiment.data_unit_label)
