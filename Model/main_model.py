@@ -20,8 +20,8 @@ from datetime import datetime
 ### [6] = ACC_MPU6050 Z AXIS // M/S²
 ### [7] = DHT22 TEMPERATURE // °C
 ### [8] = DHT22 HUMIDITY // %
-### 
-
+### [9] = KISTLER_1 TEMPERATURE // °C 
+###
 
 
 class ArduinoNano():
@@ -37,7 +37,8 @@ class ArduinoNano():
             "Acc. LIS3DH" : self.acc_scan_LIS3DH,
             "Acc. MPU6050" : self.acc_scan_MPU6050,
             "Temp. DHT22" : self.term_scan_temp_DHT22,
-            "Hum. DHT22" : self.term_scan_hum_DHT22
+            "Hum. DHT22" : self.term_scan_hum_DHT22,
+            "Temp. Kistler 1" : self.term_scan_temp_Kistler_1
         }
         self.data_unit = ''
         self.data_unit_label = ''
@@ -121,6 +122,16 @@ class ArduinoNano():
         self.data_unit = 'dimensionless'
         self.data_unit_label = '%'
         self.scan()
+
+    def term_scan_temp_Kistler_1(self):
+        self.data_index = 9
+        self.data_unit = 'delta_degree_Celsius'
+        self.data_unit_label = '°C'
+        self.scan()
+        ###if (e & MAX31855_FAULT_OPEN) tempKistler1 = -333;       //("FAULT: Thermocouple is open - no connections.");
+        ###if (e & MAX31855_FAULT_SHORT_GND) tempKistler1 = -444;  //("FAULT: Thermocouple is short-circuited to GND.");
+        ###if (e & MAX31855_FAULT_SHORT_VCC) tempKistler1 = -555;  //("FAULT: Thermocouple is short-circuited to VCC.");
+
 
     def start_scan(self, sensor_name):
         self.scan_thread = threading.Thread(target=self.sensor[sensor_name])

@@ -5,6 +5,7 @@
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
+#include "Adafruit_MAX31855.h"
 
 // Digital pin connected to the DHT sensor 
 #define DHTPIN 17
@@ -15,6 +16,14 @@
 #define LIS3DH_MOSI 11
 // Used for hardware & software SPI
 #define LIS3DH_CS 10
+
+// digital IO pins.
+#define MAXDO   16
+#define MAXCS   15
+#define MAXCLK  14
+
+// initialize the Thermocouple
+Adafruit_MAX31855 thermocouple(MAXCLK, MAXCS, MAXDO);
 
 // software SPI
 //Adafruit_LIS3DH lis = Adafruit_LIS3DH(LIS3DH_CS, LIS3DH_MOSI, LIS3DH_MISO, LIS3DH_CLK);
@@ -31,6 +40,8 @@ float lastTemp = -100;
 float lastHum = -100;
 int timevar;
 
+double tempKistler1;
+
 // 
 // ADDRESSING OF VARIABLES IN GET.SERIAL.MESSAGE ARRAY
 // [0] = 'A' // CHARACTER USED TO KNOW WHEN A LINE STARTS ON TERMINAL
@@ -42,6 +53,7 @@ int timevar;
 // [6] = ACC_MPU6050 Z AXIS // M/S²
 // [7] = DHT22 TEMPERATURE // °C
 // [8] = DHT22 HUMIDITY // %
+// [9] = KISTLER_1 TEMPERATURE // °C
 //
 
 void setup(void) {
@@ -110,6 +122,15 @@ void loop() {
   // Serial.print("  \tY:  "); Serial.print(lis.y);
   // Serial.print("  \tZ:  "); Serial.print(lis.z);
 
+  tempKistler1 = thermocouple.readCelsius();
+
+  if (isnan(tempKistler1)) {
+     uint8_t e = thermocouple.readError();
+     if (e & MAX31855_FAULT_OPEN) tempKistler1 = -333;       //("FAULT: Thermocouple is open - no connections.");
+     if (e & MAX31855_FAULT_SHORT_GND) tempKistler1 = -444;  //("FAULT: Thermocouple is short-circuited to GND.");
+     if (e & MAX31855_FAULT_SHORT_VCC) tempKistler1 = -555;  //("FAULT: Thermocouple is short-circuited to VCC.");
+   }
+
   /* Or....get a new sensor event, normalized */
   sensors_event_t event, a, g, temp, dht22;
   lis.getEvent(&event);
@@ -156,6 +177,8 @@ void loop() {
   Serial.print(lastTemp);
   Serial.print(" ");
   Serial.print(lastHum);
+  Serial.print(" ");
+  Serial.print(tempKistler1);
   Serial.print(" ");
   
 
