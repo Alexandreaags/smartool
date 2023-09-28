@@ -132,7 +132,6 @@ class ArduinoNano():
         ###if (e & MAX31855_FAULT_SHORT_GND) tempKistler1 = -444;  //("FAULT: Thermocouple is short-circuited to GND.");
         ###if (e & MAX31855_FAULT_SHORT_VCC) tempKistler1 = -555;  //("FAULT: Thermocouple is short-circuited to VCC.");
 
-
     def start_scan(self, sensor_name):
         self.scan_thread = threading.Thread(target=self.sensor[sensor_name])
         self.scan_thread.start()
