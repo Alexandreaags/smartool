@@ -1,0 +1,12 @@
+User:
+  name: Alexandre
+DAQ:
+  name: ArduinoNanoSmartool
+  port: COM10 
+  
+Scan:
+  num_steps: 500
+  delay: 20ms
+Saving:
+  filename: data.dat
+  folder: C:/Users/Alexa/Data_smartool

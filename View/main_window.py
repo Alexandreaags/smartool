@@ -37,7 +37,15 @@ class MainWindow(QMainWindow):
         self.timer.start(50)
 
         self.timer.timeout.connect(self.update_gui)
+         
+        # Populate the QComboBox with USB port names
+        self.populate_usb_ports()
 
+    def populate_usb_ports(self):
+        # You can use pyserial or other methods to get a list of USB ports
+        import serial.tools.list_ports
+        ports = [port.device for port in serial.tools.list_ports.comports()]
+        self.ports_names_box.addItems(ports)
     def start_scan(self):
         num_steps = int(self.step_line.text())
         delay = self.delay_line.text()
