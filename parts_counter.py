@@ -4,22 +4,25 @@ import matplotlib.pyplot as plt
 ser = serial.Serial('COM13', 115200) # <------ remember to change the port according to yours
 
 
-accel_threshold = 6 # Threshold of the acceleration 
+accel_threshold = 2 # Threshold of the acceleration 
 
 
 class acc_reader():
 
+    def get_serial_message(self):
+        #ser.flushInput()
+        line = ser.readline()  # Recebe os bytes diretamente
+        values = line.decode('latin-1').strip().split()
+        if len(values) > 0 and values[0] == 'A':
+            return values
+        else:
+            return self.get_serial_message()
+
     def read_acceleration(self):
-        self.x_accel = []
-        while True:
-            line = ser.readline()  # Recebe os bytes diretamente
-            try:
-                values = line.decode('latin-1').strip().split() #strip remove blank spaces
-                if len(values) == 3:
-                    self.x_accel = float(values[0])
-                    return self.x_accel + 9.58
-            except UnicodeDecodeError:
-                pass  # Ignora os bytes que não podem ser decodificados
+        self.x_accel = self.get_serial_message()
+        #print(self.x_accel)
+        self.x_accel = float(self.x_accel[4]) - 9.7
+        return self.x_accel 
 
 try:
     acc = acc_reader()
