@@ -65,7 +65,7 @@ class ArduinoNano():
             print(10*'-')
 
     def load_daq(self):
-        # self.daq = Device(self.config['DAQ']['port'])
+        self.daq = Device(self.config['DAQ']['port'])
         self.daq.initialize()
 
     def scan(self):
