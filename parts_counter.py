@@ -14,9 +14,26 @@ accel_threshold = 1 # Threshold of the acceleration
 
 class acc_reader():
 
+    def get_serial_message(self):
+        #ser.flushInput()
+        line = ser.readline()  # Recebe os bytes diretamente
+        values = line.decode('latin-1').strip().split()
+        if len(values) > 0 and values[0] == 'A':
+            return values
+        else:
+            return self.get_serial_message()
+
     def read_acceleration(self):
-        return frame['data_4'] + 9.7
-         
+        self.x_accel = []
+        while True:
+            line = ser.readline()  # Recebe os bytes diretamente
+            try:
+                values = line.decode('latin-1').strip().split() #strip remove blank spaces
+                if len(values) == 3:
+                    self.x_accel = float(values[0])
+                    return self.x_accel + 9.58
+            except UnicodeDecodeError:
+                pass  # Ignora os bytes que não podem ser decodificados
 
 try:
     acc = acc_reader()
