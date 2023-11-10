@@ -255,8 +255,9 @@ void loop() {
     //delay(100);
     aux2 = millis() - aux2;
     Serial.print(aux1);
-    Serial.print('  ');
-    Serial.println(aux2);
+    Serial.print("bubassauro");
+    Serial.print(aux2);
+    Serial.println(' ');
   }
 }
 
