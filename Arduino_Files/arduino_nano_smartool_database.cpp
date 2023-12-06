@@ -43,7 +43,10 @@ int timevar;
 
 double tempKistler1;
 
-int aux1, aux2;
+int aux1, aux2, counter=0;
+
+int requestCounter = 0;
+const int maxRequestsBeforeReconnect = 80;
 
 // 
 // ADDRESSING OF VARIABLES IN GET.SERIAL.MESSAGE ARRAY
@@ -76,6 +79,8 @@ char server[] = "192.168.137.1";    // IPv4 ADRESS FOR NOTEBOOK WIFI NETWORK, NO
 // that you want to connect to (port 80 is default for HTTP):
 WiFiClient client;
 //////////////////////////////////////////////////////////////////////
+
+int i=0;
 
 void setup(void) {
   // LIS3DH
@@ -163,101 +168,99 @@ void setup(void) {
 }
 
 void loop() {
-  aux1 = millis();
-  if (client.connect(server, 80)) {
-    aux2 = millis();
-    aux1 = millis() - aux1;
-    tempKistler1 = thermocouple.readCelsius();
-
-    if (isnan(tempKistler1)) {
-      uint8_t e = thermocouple.readError();
-      if (e & MAX31855_FAULT_OPEN) tempKistler1 = -333;       //("FAULT: Thermocouple is open - no connections.");
-      if (e & MAX31855_FAULT_SHORT_GND) tempKistler1 = -444;  //("FAULT: Thermocouple is short-circuited to GND.");
-      if (e & MAX31855_FAULT_SHORT_VCC) tempKistler1 = -555;  //("FAULT: Thermocouple is short-circuited to VCC.");
+  if (!client.connected() || requestCounter >= maxRequestsBeforeReconnect) {
+    requestCounter = 0;  // Reset the request counter after reconnecting
+    if (client.connect(server, 80)) {
+      Serial.println("Conectado ao servidor");
+    } else {
+      Serial.println("Falha na conexão com o servidor");
+      delay(1000);
+      return;
     }
-
-    /* Or....get a new sensor event, normalized */
-    sensors_event_t event, a, g, temp, dht22;
-    lis.getEvent(&event);
-    mpu.getEvent(&a, &g, &temp);
-
-    // Temperature and humidity
-    if (millis() - timevar > 2000)
-    {
-      dht.temperature().getEvent(&dht22);
-
-      if (isnan(dht22.temperature)) {
-        lastTemp = -100;
-      }
-      else {
-        lastTemp = dht22.temperature;
-      }
-
-      dht.humidity().getEvent(&dht22);
-
-      if (isnan(dht22.relative_humidity)) {
-        lastHum = -100;
-      }
-      else {
-        lastHum = dht22.relative_humidity;
-      }
-      timevar = millis();
-    }
-
-    /////////////////////////
-    //Serial.print("GET /testcode/arduino.php?data_1=");
-    client.print("GET /testcode/arduino.php?data_1=");     //YOUR URL
-    //Serial.println(event.acceleration.x);
-    client.print(event.acceleration.x);
-    client.print("&data_2=");
-    //Serial.println("&data_2=");
-    client.print(event.acceleration.y);
-    //Serial.println(event.acceleration.y);
-    client.print("&data_3=");
-    //Serial.println("&data_3=");
-    client.print(event.acceleration.z);
-    //Serial.println(event.acceleration.z);
-    client.print("&data_4=");
-    //Serial.println("&data_4=");
-    client.print(a.acceleration.x);
-    //Serial.println(a.acceleration.x);
-    client.print("&data_5=");
-    //Serial.println("&data_5=");
-    client.print(a.acceleration.y);
-    //Serial.println(a.acceleration.y);
-    client.print("&data_6=");
-    //Serial.println("&data_6=");
-    client.print(a.acceleration.z);
-    //Serial.println(a.acceleration.z);
-    client.print("&data_7=");
-    //Serial.println("&data_7=");
-    client.print(lastTemp);
-    //Serial.println(lastTemp);
-    client.print("&data_8=");
-    //Serial.println("&data_8=");
-    client.print(lastHum);
-    //Serial.println(lastHum);
-    client.print("&data_9=");
-    //Serial.println("&data_9=");
-    client.print(tempKistler1);
-    //Serial.println(tempKistler1);
-    client.print("&data_10=");
-    //Serial.println("&data_10=");
-    client.print(NULL);
-    //Serial.println(NULL);
-    client.print(" ");      //SPACE BEFORE HTTP/1.1
-    client.print("HTTP/1.1");
-    client.println();
-    client.println("Host: 192.168.137.1");
-    client.println("Connection: close");
-    client.println();
-    /////////////////////////
-    //delay(100);
-    aux2 = millis() - aux2;
-    Serial.print(aux1);
-    Serial.print('  ');
-    Serial.println(aux2);
   }
+  tempKistler1 = thermocouple.readCelsius();
+  if (isnan(tempKistler1)) {
+    uint8_t e = thermocouple.readError();
+    if (e & MAX31855_FAULT_OPEN) tempKistler1 = -333;       //("FAULT: Thermocouple is open - no connections.");
+    if (e & MAX31855_FAULT_SHORT_GND) tempKistler1 = -444;  //("FAULT: Thermocouple is short-circuited to GND.");
+    if (e & MAX31855_FAULT_SHORT_VCC) tempKistler1 = -555;  //("FAULT: Thermocouple is short-circuited to VCC.");
+  }
+  /* Or....get a new sensor event, normalized */
+  sensors_event_t event, a, g, temp, dht22;
+  lis.getEvent(&event);
+  mpu.getEvent(&a, &g, &temp);
+  // Temperature and humidity
+  if (millis() - timevar > 2000)
+  {
+    dht.temperature().getEvent(&dht22);
+    if (isnan(dht22.temperature)) {
+      lastTemp = -100;
+    }
+    else {
+      lastTemp = dht22.temperature;
+    }
+    dht.humidity().getEvent(&dht22);
+    if (isnan(dht22.relative_humidity)) {
+      lastHum = -100;
+    }
+    else {
+      lastHum = dht22.relative_humidity;
+    }
+    timevar = millis();
+  }
+  /////////////////////////
+  //Serial.print("GET /testcode/arduino.php?data_1=");
+  client.print("GET /testcode/arduino.php?data_1=");     //YOUR URL
+  Serial.print(event.acceleration.x);
+  client.print(event.acceleration.x);
+  client.print("&data_2=");
+  Serial.print("&data_2=");
+  client.print(event.acceleration.y);
+  Serial.print(event.acceleration.y);
+  client.print("&data_3=");
+  Serial.print("&data_3=");
+  client.print(event.acceleration.z);
+  Serial.print(event.acceleration.z);
+  client.print("&data_4=");
+  Serial.print("&data_4=");
+  client.print(a.acceleration.x);
+  Serial.print(a.acceleration.x);
+  client.print("&data_5=");
+  Serial.print("&data_5=");
+  client.print(a.acceleration.y);
+  Serial.print(a.acceleration.y);
+  client.print("&data_6=");
+  Serial.print("&data_6=");
+  client.print(a.acceleration.z);
+  Serial.print(a.acceleration.z);
+  client.print("&data_7=");
+  Serial.print("&data_7=");
+  client.print(lastTemp);
+  Serial.print(lastTemp);
+  client.print("&data_8=");
+  Serial.print("&data_8=");
+  client.print(lastHum);
+  Serial.print(lastHum);
+  client.print("&data_9=");
+  Serial.print("&data_9=");
+  client.print(tempKistler1);
+  Serial.print(tempKistler1);
+  client.print("&data_10=");
+  Serial.print("&data_10=");
+  client.print(NULL);
+  Serial.print(NULL);
+  Serial.print("    ");
+  client.print(" ");      //SPACE BEFORE HTTP/1.1
+  client.print("HTTP/1.1");
+  client.println();
+  client.println("Host: 192.168.137.1");
+  client.println("Connection: keep-alive");
+  client.println();
+  /////////////////////////
+  //delay(100);
+  counter += 1;
+  Serial.println(counter);
+  requestCounter++;
 }
 
 void printWifiStatus() {

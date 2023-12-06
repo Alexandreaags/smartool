@@ -180,7 +180,7 @@ void loop() {
   Serial.print(" ");
   Serial.print(tempKistler1);
   Serial.print(" ");
-  Serial.print(millis())
+  Serial.print(millis());
 
   Serial.println("");
 
