@@ -100,7 +100,7 @@ void setup(void) {
       delay(10);
     }
   }
-  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+  mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
 
   //mpu.setGyroRange(MPU6050_RANGE_500_DEG);
 
