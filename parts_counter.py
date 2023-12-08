@@ -9,7 +9,7 @@ sqlEngine       = create_engine('mysql+pymysql://ipk:fraunhoferipk@192.168.137.1
 dbConnection    = sqlEngine.connect()
 frame           = pd.read_sql("select ID, data_1 from arduino.sql_data WHERE ID > 0 ", dbConnection)
 
-accel_threshold = 1 # Threshold of the acceleration 
+accel_threshold = 2.1 # Threshold of the acceleration 
 
 
 class acc_reader():
@@ -59,7 +59,7 @@ try:
             part_detected = False  # Redefine to False when the position is less than threshold 
     # part_count = part_count/2
     print(part_count)   
-    print(data)
+    # print(data)
     for i in range(0, len(data_acc)):
             x.append(i)
     print("Amount of manufactured parts:", part_count/2)
