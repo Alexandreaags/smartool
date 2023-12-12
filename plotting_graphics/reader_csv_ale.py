@@ -8,5 +8,5 @@ data_path = {
     'TEST 15 PARTS' : 'C:/Users/Alexa/Programs/Smartool/data/TEST-2-15PARTS-07-12-2023.csv'    
 }
 
-data = pd.read_csv(data_path['TEST 15 PARTS'], sep=";", header=0, decimal=',')
+data = pd.read_csv(data_path['TEST 10 PARTS'], sep=";", header=0, decimal=',')
 print(data)
