@@ -3,22 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from statistics import mean
 from sqlalchemy import create_engine
+
 class Operator():
     def __init__(self):
-        #----------------------------- Tassio's path -----------------------------------------------------
-        # self.data_path = {  
-        #     'TEST 3 PARTS'  : 'C:\\Users\\tassi\\GITHUB\\Smartool\\data\\TEST-1-3PARTS-07-12-2023.csv',
-        #     'TEST 10 PARTS' : 'C:\\Users\\tassi\\GITHUB\\Smartool\\data\\TEST-3-10PARTS-07-12-2023.csv',
-        #     'TEST 12 PARTS' : 'C:\\Users\\tassi\\GITHUB\\Smartool\\data\\TEST-4-12PARTS-07-12-2023.csv',
-        #     'TEST 15 PARTS' : 'C:\\Users\\tassi\\GITHUB\\Smartool\\data\\TEST-2-15PARTS-07-12-2023.csv'    
-        # }
-        #------------------------------ Alexandre's path ------------------------------------------------
-        self.data_path = {  
-            'TEST 3 PARTS' : 'C:/Users/Alexa/Programs/Smartool/data/TEST-1-3PARTS-07-12-2023.csv',
-            'TEST 10 PARTS' : 'C:/Users/Alexa/Programs/Smartool/data/TEST-3-10PARTS-07-12-2023.csv',
-            'TEST 12 PARTS' : 'C:/Users/Alexa/Programs/Smartool/data/TEST-4-12PARTS-07-12-2023.csv',
-            'TEST 15 PARTS' : 'C:/Users/Alexa/Programs/Smartool/data/TEST-2-15PARTS-07-12-2023.csv'     
-        }
         # Offset seen on raw data
         self.data_offset = - 0.3
         # Threshold for zeroing values
@@ -27,19 +14,23 @@ class Operator():
         self.threshold_zeros = 33
         # Flag for counting
         self.cycle_counter_flag = False
-
-    def get_data(self, file_name):
-        # Read CSV
+    def read_csv(self, file_name):
+        self.data_path = {  
+            'TEST 3 PARTS'  : 'data/TEST-1-3PARTS-07-12-2023.csv',
+            'TEST 10 PARTS' : 'data/TEST-3-10PARTS-07-12-2023.csv',
+            'TEST 12 PARTS' : 'data/TEST-4-12PARTS-07-12-2023.csv',
+            'TEST 15 PARTS' : 'data/TEST-2-15PARTS-07-12-2023.csv'     
+        }
         self.data = pd.read_csv(self.data_path[file_name], sep=";", header=0, decimal=',')
-         # Invert Index
+    def get_data(self):
+        # Invert Index
         self.data = self.data[::-1].reset_index(drop=True)
         # Consecutives zeroes array
         self.conseq_zero = np.zeros(len(self.data))
         # Spaces between movements array
         self.spaces = np.zeros(len(self.data))
         # Parts counter analyzing rest periods
-        self.cycle_counter = np.ones(len(self.data))
-        
+        self.cycle_counter = np.ones(len(self.data)) 
     def treat_data(self):    
         # Removing offset
         for i in self.data.index:
@@ -49,7 +40,6 @@ class Operator():
             if self.data.iloc[i]['acc_1_x'] < self.threshold and self.data.iloc[i]['acc_1_x'] > - self.threshold:
                 self.data.at[i, 'acc_1_x'] = 0
                 self.conseq_zero[i] = self.conseq_zero[i-1] + 1
-
     def separate_by_zeros(self):
         # Get indexes
         index_threshold_zeros = np.where(self.conseq_zero==self.threshold_zeros)
@@ -68,7 +58,6 @@ class Operator():
                 ii -= 1
                 if ii == -1:
                     break
-
     def define_cycles(self):
         counter = 0
         self.flag = True
@@ -81,15 +70,12 @@ class Operator():
             elif self.spaces[i] == 1:
                 self.cycle_counter[i] = counter
                 flag = False
-
     def flag_rest(self):
         #Add 'cycle_nr' and 'is_resting' arrays to Results Dataframe 
         self.data_rest_flagged = self.data
         self.data_rest_flagged.insert(1, "is_resting", self.spaces)
         self.data_rest_flagged.insert(2, "cycle_nr", self.cycle_counter)
-
     def get_results(self):
-        engine = create_engine('mysql+pymysql://ipk:fraunhoferipk@192.168.137.1/arduino')
         #Creating Results Dataframe to be further added in Database
         self.results = pd.DataFrame(columns=['cycle_nr', 'cycle_ambient_temperature', 'cycle_ambient_humidity', 'cycle_cavity_temperature', 
                                         'cycle_cavity_pressure', 'cycle_closing_force'])
@@ -142,12 +128,18 @@ class Operator():
             
             cycle += 1
 
-        print(self.results)
+        print(self.results) 
+    def insert_in_db(self, username, password, hostname):
+        engine_config = 'mysql+pymysql://' + username + ':' + password + '@' + hostname
+        engine = create_engine(engine_config, pool_recycle=3600)
+        dbConnection = engine.connect()
         # if_exists='replace' will replace the table if it already exists. You can change it to 'append' if you want to add rows to an existing table.
-        self.results.to_sql(name='sql_results', con=engine, if_exists='replace', index=False) 
+        self.results.to_sql(name='sql_results', con=dbConnection, schema='arduino', if_exists='append', index=False)
+        dbConnection.close()        
 
 op = Operator()
-op.get_data('TEST 15 PARTS')
+op.read_csv('TEST 15 PARTS')
+op.get_data()
 print(op.data)
 # PLOT RAW DATA
 plt.plot(op.data.iloc[:]['ID'].to_numpy(), op.data.iloc[:]['acc_1_x'].to_numpy(), 'k')
@@ -163,6 +155,8 @@ op.flag_rest()
 print(op.data_rest_flagged)
 
 op.get_results()
+op.insert_in_db('root', 'tassio25789', '127.0.0.1')
+#op.insert_in_db('root', '', '127.0.0.1')
 
 # PLOT SPACES
 plt.plot(op.data.iloc[:]['ID'].to_numpy(), op.spaces, 'c')
