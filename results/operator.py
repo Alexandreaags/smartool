@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from statistics import mean
-
+from sqlalchemy import create_engine
 class Operator():
     def __init__(self):
         #----------------------------- Tassio's path -----------------------------------------------------
@@ -89,6 +89,7 @@ class Operator():
         self.data_rest_flagged.insert(2, "cycle_nr", self.cycle_counter)
 
     def get_results(self):
+        engine = create_engine('mysql+pymysql://ipk:fraunhoferipk@192.168.137.1/arduino')
         #Creating Results Dataframe to be further added in Database
         self.results = pd.DataFrame(columns=['cycle_nr', 'cycle_ambient_temperature', 'cycle_ambient_humidity', 'cycle_cavity_temperature', 
                                         'cycle_cavity_pressure', 'cycle_closing_force'])
@@ -142,6 +143,8 @@ class Operator():
             cycle += 1
 
         print(self.results)
+        # if_exists='replace' will replace the table if it already exists. You can change it to 'append' if you want to add rows to an existing table.
+        self.results.to_sql(name='sql_results', con=engine, if_exists='replace', index=False) 
 
 op = Operator()
 op.get_data('TEST 15 PARTS')
