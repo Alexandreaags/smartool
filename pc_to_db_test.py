@@ -3,7 +3,7 @@ import pandas as pd
 import random as rd
 from time import sleep
 
-sqlEngine       = create_engine('mysql+pymysql://root:tassio25789@127.0.0.1', pool_recycle=3600)
+sqlEngine       = create_engine('mysql+pymysql://root:@127.0.0.1', pool_recycle=3600)
 dbConnection    = sqlEngine.connect()
 
 cycle_nr = 1
