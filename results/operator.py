@@ -72,7 +72,7 @@ class Operator():
     def define_cycles(self):
         counter = 0
         self.flag = True
-        # Counting parts
+        #Define the cycle for every row in Dataframe 
         for i in range(0, len(self.spaces)):
             if self.spaces[i] == 0 and flag == False:
                 counter += 1
@@ -83,11 +83,13 @@ class Operator():
                 flag = False
 
     def flag_rest(self):
+        #Add 'cycle_nr' and 'is_resting' arrays to Results Dataframe 
         self.data_rest_flagged = self.data
         self.data_rest_flagged.insert(1, "is_resting", self.spaces)
         self.data_rest_flagged.insert(2, "cycle_nr", self.cycle_counter)
 
     def get_results(self):
+        #Creating Results Dataframe to be further added in Database
         self.results = pd.DataFrame(columns=['cycle_nr', 'cycle_ambient_temperature', 'cycle_ambient_humidity', 'cycle_cavity_temperature', 
                                         'cycle_cavity_pressure', 'cycle_closing_force'])
         #cycle_ambient_temperature  -- all the time
@@ -102,18 +104,17 @@ class Operator():
         #self.cycle_cavity_pressure = 0
         #self.cycle_closing_force = 0
 
-        self.mean_ambient_temperature = 0
-        self.mean_ambient_humidity = 0
-        self.mean_cavity_temperature = 0
+        #self.mean_ambient_temperature = 0
+        #self.mean_ambient_humidity = 0
+        #self.mean_cavity_temperature = 0
         #self.mean_cavity_pressure = 0
         #self.mean_closing_force = 0
 
+        #Define first and last cycle
         cycle = self.data_rest_flagged.at[0, 'cycle_nr']
         last_cycle = self.data_rest_flagged.at[len(self.data_rest_flagged) - 1, 'cycle_nr']
 
-        array_cavity_temperature = self.data_rest_flagged.loc[(self.data_rest_flagged['cycle_nr'] == cycle) & (self.data_rest_flagged['is_resting'] == 0)].loc[:, 'tempKistler1']
-        print(array_cavity_temperature)
-
+        #Go through every cycle and calculate mean for all variables
         while cycle <= last_cycle:
             array_ambient_temperature = self.data_rest_flagged.loc[self.data_rest_flagged['cycle_nr'] == cycle].loc[:, 'lastTemp']
             if len(array_ambient_temperature) == 0:
@@ -127,6 +128,7 @@ class Operator():
             #array_cavity_pressure = self.data_rest_flagged.loc[[(self.data_rest_flagged['cycle_nr'] == cycle) & (self.data_rest_flagged['is_resting'] == 0)], ['']]
             #array_closing_force = self.data_rest_flagged.loc[[(self.data_rest_flagged['cycle_nr'] == cycle) & (self.data_rest_flagged['is_resting'] == 0)], ['']]
             
+            #Define a dictionary with the values for a cycle
             new_row = {'cycle_nr':cycle, 
                        'cycle_ambient_temperature':mean(array_ambient_temperature),
                        'cycle_ambient_humidity':mean(array_ambient_humidity),
@@ -134,6 +136,7 @@ class Operator():
                        'cycle_cavity_pressure':0,
                        'cycle_closing_force':0}
             
+            #Insert dictionary in Dataframe
             self.results.loc[len(self.results)] = new_row
             
             cycle += 1
