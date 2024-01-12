@@ -1,4 +1,3 @@
-import serial
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -12,13 +11,13 @@ data_path = {
 data = pd.read_csv(data_path['TEST 3 PARTS'], sep=";", header=0, decimal=',')
 
 
-accel_threshold = 0.217 # Threshold of the acceleration 
+accel_threshold = 0.5 # Threshold of the acceleration 
 
 
 
 data_acc = []
 part_count = 0
-part_detected = False #Flag to count the part only one time
+stop_detected = False #Flag to count the part only one time
     
 # print("Running...")
         
@@ -28,27 +27,22 @@ data_acc = data['acc_1_x'].tolist()
 list_data = []
 # print(data_acc)
 # x = 0
-x_axis = []
-y_axis = []
+
 for i in data_acc:
     # x += 1
     list_data.append(i)
     # print(list_data)
-    last_data = list_data[-100:]# separe only the last datas from the list
-    sum_data = sum(last_data)# sum the last 100 datas 
-    mean_data = sum_data/len(last_data)# mean of the last 100 datas
-    x_axis.append(mean_data)
     # print(f'Mean {x}: {mean_data}')
 
-    if mean_data > accel_threshold and not part_detected:
+    if i < accel_threshold and not stop_detected:
 
-        print("Changing of position detected in X axis!")
-        part_detected = True
+        print("Stop detected!")
+        stop_detected = True
+        
+
+    if i > accel_threshold:
+        stop_detected = False  # Redefine para Falso quando a posição volta ao normal
         part_count += 1  # Incrementa a contagem de peças
-
-    if mean_data < accel_threshold:
-        part_detected = False  # Redefine para Falso quando a posição volta ao normal
-
 print("Amount of manufactured parts:", part_count)
         # print(data_acc)
     

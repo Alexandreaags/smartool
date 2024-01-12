@@ -5,11 +5,19 @@ from statistics import mean
 
 class Operator():
     def __init__(self):
+        #----------------------------- Tassio's path -----------------------------------------------------
+        # self.data_path = {  
+        #     'TEST 3 PARTS'  : 'C:\\Users\\tassi\\GITHUB\\Smartool\\data\\TEST-1-3PARTS-07-12-2023.csv',
+        #     'TEST 10 PARTS' : 'C:\\Users\\tassi\\GITHUB\\Smartool\\data\\TEST-3-10PARTS-07-12-2023.csv',
+        #     'TEST 12 PARTS' : 'C:\\Users\\tassi\\GITHUB\\Smartool\\data\\TEST-4-12PARTS-07-12-2023.csv',
+        #     'TEST 15 PARTS' : 'C:\\Users\\tassi\\GITHUB\\Smartool\\data\\TEST-2-15PARTS-07-12-2023.csv'    
+        # }
+        #------------------------------ Alexandre's path ------------------------------------------------
         self.data_path = {  
-            'TEST 3 PARTS'  : 'C:\\Users\\tassi\\GITHUB\\Smartool\\data\\TEST-1-3PARTS-07-12-2023.csv',
-            'TEST 10 PARTS' : 'C:\\Users\\tassi\\GITHUB\\Smartool\\data\\TEST-3-10PARTS-07-12-2023.csv',
-            'TEST 12 PARTS' : 'C:\\Users\\tassi\\GITHUB\\Smartool\\data\\TEST-4-12PARTS-07-12-2023.csv',
-            'TEST 15 PARTS' : 'C:\\Users\\tassi\\GITHUB\\Smartool\\data\\TEST-2-15PARTS-07-12-2023.csv'    
+            'TEST 3 PARTS' : 'C:/Users/Alexa/Programs/Smartool/data/TEST-1-3PARTS-07-12-2023.csv',
+            'TEST 10 PARTS' : 'C:/Users/Alexa/Programs/Smartool/data/TEST-3-10PARTS-07-12-2023.csv',
+            'TEST 12 PARTS' : 'C:/Users/Alexa/Programs/Smartool/data/TEST-4-12PARTS-07-12-2023.csv',
+            'TEST 15 PARTS' : 'C:/Users/Alexa/Programs/Smartool/data/TEST-2-15PARTS-07-12-2023.csv'     
         }
         # Offset seen on raw data
         self.data_offset = - 0.3
