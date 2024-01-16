@@ -14,6 +14,15 @@ class Operator():
         self.threshold_zeros = 33
         # Flag for counting
         self.cycle_counter_flag = False
+        # Number of samples read in a run
+        self.nr_samples = 100
+        # Database connection
+        self.db_info : {
+            'username' : '',
+            'password' : '',
+            'hostname' : ''
+        }
+
     def read_csv(self, file_name):
         self.data_path = {  
             'TEST 3 PARTS'  : 'data/TEST-1-3PARTS-07-12-2023.csv',
@@ -22,6 +31,32 @@ class Operator():
             'TEST 15 PARTS' : 'data/TEST-2-15PARTS-07-12-2023.csv'     
         }
         self.data = pd.read_csv(self.data_path[file_name], sep=";", header=0, decimal=',')
+
+    def read_db(self):
+        sqlEngine = create_engine(('mysql+pymysql://' + 
+                                   self.db_info['username'] + ':' + 
+                                   self.db_info['password'] + '@' + 
+                                   self.db_info['hostname']), pool_recycle=3600)
+        dbConnection    = sqlEngine.connect()
+        self.last_result = pd.read_sql(('SELECT nr_samples_in_mean, sum_mean_ambient_temperature, ' + 
+                                        'sum_mean_ambient_humidity, sum_mean_cavity_temperature, sum_mean_cavity_pressure, ' + 
+                                        'sum_mean_closing_force, last_value_conseq_zero, ' + 
+                                        'last_ID FROM arduino.sql_results ORDER BY ID DESC LIMIT 1'), dbConnection)
+        dbConnection.close()
+
+        print(self.last_result)
+
+        self.initial_conseq_zero = self.last_result.iloc[0]['last_value_conseq_zero']
+        self.nr_samples_in_mean = self.last_result.iloc[0]['nr_samples_in_mean']
+        self.data_last_id = self.last_result.iloc[0]['last_ID']
+        self.sum_mean_variables = {
+            'ambient_temperature' : self.last_result.iloc[0]['sum_mean_ambient_temperature'],
+            'ambient_humidity' : self.last_result.iloc[0]['sum_mean_ambient_humidity'],
+            'cavity_temperature' : self.last_result.iloc[0]['sum_mean_cavity_temperature'],
+            'cavity_pressure' : self.last_result.iloc[0]['sum_mean_cavity_pressure'],
+            'closing_force' : self.last_result.iloc[0]['sum_mean_closing_force']
+        }
+
     def get_data(self):
         # Invert Index
         self.data = self.data[::-1].reset_index(drop=True)
@@ -30,7 +65,8 @@ class Operator():
         # Spaces between movements array
         self.spaces = np.zeros(len(self.data))
         # Parts counter analyzing rest periods
-        self.cycle_counter = np.ones(len(self.data)) 
+        self.cycle_counter = np.ones(len(self.data))
+
     def treat_data(self):    
         # Removing offset
         for i in self.data.index:
@@ -40,6 +76,7 @@ class Operator():
             if self.data.iloc[i]['acc_1_x'] < self.threshold and self.data.iloc[i]['acc_1_x'] > - self.threshold:
                 self.data.at[i, 'acc_1_x'] = 0
                 self.conseq_zero[i] = self.conseq_zero[i-1] + 1
+    
     def separate_by_zeros(self):
         # Get indexes
         index_threshold_zeros = np.where(self.conseq_zero==self.threshold_zeros)
@@ -58,6 +95,7 @@ class Operator():
                 ii -= 1
                 if ii == -1:
                     break
+    
     def define_cycles(self):
         counter = 0
         self.flag = True
@@ -70,15 +108,17 @@ class Operator():
             elif self.spaces[i] == 1:
                 self.cycle_counter[i] = counter
                 flag = False
+    
     def flag_rest(self):
         #Add 'cycle_nr' and 'is_resting' arrays to Results Dataframe 
         self.data_rest_flagged = self.data
         self.data_rest_flagged.insert(1, "is_resting", self.spaces)
         self.data_rest_flagged.insert(2, "cycle_nr", self.cycle_counter)
+    
     def get_results(self):
         #Creating Results Dataframe to be further added in Database
-        self.results = pd.DataFrame(columns=['cycle_nr', 'cycle_ambient_temperature', 'cycle_ambient_humidity', 'cycle_cavity_temperature', 
-                                        'cycle_cavity_pressure', 'cycle_closing_force'])
+        self.results = pd.DataFrame(columns=['cycle_nr', 'cycle_ambient_temperature', 'cycle_ambient_humidity', 
+                                             'cycle_cavity_temperature', 'cycle_cavity_pressure', 'cycle_closing_force'])
         #cycle_ambient_temperature  -- all the time
         #cycle_ambient_humidity     -- all the time
         #cycle_cavity_temperature   -- while closed
@@ -129,6 +169,7 @@ class Operator():
             cycle += 1
 
         print(self.results) 
+    
     def insert_in_db(self, username, password, hostname):
         engine_config = 'mysql+pymysql://' + username + ':' + password + '@' + hostname
         engine = create_engine(engine_config, pool_recycle=3600)
@@ -138,7 +179,13 @@ class Operator():
         dbConnection.close()        
 
 op = Operator()
-op.read_csv('TEST 15 PARTS')
+op.db_info = {'username' : 'root',
+              'password' : 'tassio25789',
+              'hostname' : '127.0.0.1'}
+
+op.read_db()
+
+""" op.read_csv('TEST 15 PARTS')
 op.get_data()
 print(op.data)
 # PLOT RAW DATA
@@ -167,4 +214,4 @@ plt.plot(op.data.iloc[:]['ID'].to_numpy(), op.spaces, 'c')
 
 plt.xlabel('Samples')
 plt.ylabel('m/s')
-plt.show()
+plt.show() """
