@@ -15,7 +15,7 @@ class Operator():
         # Flag for counting
         self.cycle_counter_flag = False
         # Number of samples read in a run
-        self.nr_samples = 100
+        self.nr_samples = 500
         # Database connection
         self.db_info : {
             'username' : '',
@@ -33,6 +33,7 @@ class Operator():
         self.data = pd.read_csv(self.data_path[file_name], sep=";", header=0, decimal=',')
 
     def read_db(self):
+        # Get final values of last calculated cycle
         sqlEngine = create_engine(('mysql+pymysql://' + 
                                    self.db_info['username'] + ':' + 
                                    self.db_info['password'] + '@' + 
@@ -42,13 +43,10 @@ class Operator():
                                         'sum_mean_ambient_humidity, sum_mean_cavity_temperature, sum_mean_cavity_pressure, ' + 
                                         'sum_mean_closing_force, last_value_conseq_zero, ' + 
                                         'last_ID FROM arduino.sql_results ORDER BY ID DESC LIMIT 1'), dbConnection)
-        dbConnection.close()
-
-        print(self.last_result)
 
         self.initial_conseq_zero = self.last_result.iloc[0]['last_value_conseq_zero']
         self.nr_samples_in_mean = self.last_result.iloc[0]['nr_samples_in_mean']
-        self.data_last_id = self.last_result.iloc[0]['last_ID']
+        self.data_last_id = int(self.last_result.iloc[0]['last_ID'])
         self.sum_mean_variables = {
             'ambient_temperature' : self.last_result.iloc[0]['sum_mean_ambient_temperature'],
             'ambient_humidity' : self.last_result.iloc[0]['sum_mean_ambient_humidity'],
@@ -56,8 +54,24 @@ class Operator():
             'cavity_pressure' : self.last_result.iloc[0]['sum_mean_cavity_pressure'],
             'closing_force' : self.last_result.iloc[0]['sum_mean_closing_force']
         }
+        # Get data
+        self.data = pd.read_sql(('SELECT * FROM arduino.sql_data WHERE ID > ' + str(self.data_last_id) + 
+                                ' LIMIT ' + str(self.nr_samples)), dbConnection)
+        self.data.columns = ['ID', 'acc_1_x', 'acc_1_y', 'acc_1_z', 'acc_2_x', 'acc_2_y', 
+                             'acc_2_z', 'lastTemp', 'lastHum', 'tempKistler1', 'data_10', 'date']
 
-    def get_data(self):
+        print(self.data)
+
+        # Consecutives zeroes array
+        self.conseq_zero = np.zeros(len(self.data))
+        # Spaces between movements array
+        self.spaces = np.zeros(len(self.data))
+        # Parts counter analyzing rest periods
+        self.cycle_counter = np.ones(len(self.data))
+
+        dbConnection.close()
+
+    def get_data_csv(self):
         # Invert Index
         self.data = self.data[::-1].reset_index(drop=True)
         # Consecutives zeroes array
@@ -185,9 +199,9 @@ op.db_info = {'username' : 'root',
 
 op.read_db()
 
-""" op.read_csv('TEST 15 PARTS')
-op.get_data()
-print(op.data)
+#op.read_csv('TEST 15 PARTS')
+#op.get_data_csv()
+#print(op.data)
 # PLOT RAW DATA
 plt.plot(op.data.iloc[:]['ID'].to_numpy(), op.data.iloc[:]['acc_1_x'].to_numpy(), 'k')
 op.treat_data()
@@ -195,15 +209,16 @@ op.separate_by_zeros()
 op.define_cycles()
 
 # Print parts number
-print("NUMBER OF SPACES: " + str(op.cycle_counter[-1]/2))
+#print("NUMBER OF SPACES: " + str(op.cycle_counter[-1]/2))
 
 op.flag_rest()
 
-print(op.data_rest_flagged)
+#print(op.data_rest_flagged)
 
 op.get_results()
-op.insert_in_db('root', 'tassio25789', '127.0.0.1')
+#op.insert_in_db('root', 'tassio25789', '127.0.0.1')
 #op.insert_in_db('root', '', '127.0.0.1')
+
 
 # PLOT SPACES
 plt.plot(op.data.iloc[:]['ID'].to_numpy(), op.spaces, 'c')
@@ -214,4 +229,4 @@ plt.plot(op.data.iloc[:]['ID'].to_numpy(), op.spaces, 'c')
 
 plt.xlabel('Samples')
 plt.ylabel('m/s')
-plt.show() """
+plt.show()
