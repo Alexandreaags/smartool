@@ -12,7 +12,7 @@ while(1):
     mean_ambient_temperature = rd.randrange(19, 35, 1)
     mean_ambient_humidity = rd.randrange(1, 99, 1)
     mean_cavity_temperature = rd.randrange(0, 200, 1)
-    mean_cavity_pressure = rd.randrange(0, 200000, 1)
+    mean_cavity_pressure = rd.randrange(0, 1000, 1)
     mean_closing_force = rd.randrange(0, 350000, 1)
     initial_time = 2
     final_time = 4
@@ -26,7 +26,7 @@ while(1):
     cycle_nr += 1
 
     frame_2.to_sql('sql_results', index=False, con=dbConnection, schema='arduino', if_exists='append')
-    sleep(1)
+    sleep(0.2)
 
 dbConnection.close()
     
