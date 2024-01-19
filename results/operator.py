@@ -76,7 +76,8 @@ class Operator():
 
         dbConnection.close()
 
-        #print(self.data)
+        if self.data.shape[0] == 0:
+            return 0
 
         # Consecutives zeroes array
         self.conseq_zero = np.zeros(len(self.data))
@@ -178,9 +179,7 @@ class Operator():
         array_cavity_temperature = self.data_rest_flagged.loc[(self.data_rest_flagged['cycle_nr'] == 0) & (self.data_rest_flagged['is_resting'] == 0)].loc[:, 'tempKistler1']
         if len(array_cavity_temperature) == 0:
             array_cavity_temperature = [0]
-        print(self.data_rest_flagged.loc[self.data_rest_flagged['cycle_nr'] == 0].loc[:, 'ID'])
         last_ID = int(self.data_rest_flagged.loc[self.data_rest_flagged['cycle_nr'] == 0].loc[:, 'ID'].iloc[-1])
-        print(last_ID)
         
         #array_cavity_pressure = self.data_rest_flagged.loc[[(self.data_rest_flagged['cycle_nr'] == cycle) & (self.data_rest_flagged['is_resting'] == 0)], ['']]
         #array_closing_force = self.data_rest_flagged.loc[[(self.data_rest_flagged['cycle_nr'] == cycle) & (self.data_rest_flagged['is_resting'] == 0)], ['']]
@@ -248,9 +247,7 @@ class Operator():
             #Insert dictionary in Dataframe
             self.results.loc[len(self.results)] = new_row
             
-            cycle += 1
-
-        print(self.results) 
+            cycle += 1 
     
     def insert_in_db(self):
         engine_config = 'mysql+pymysql://' + self.db_info['username'] + ':' + self.db_info['password'] + '@' + self.db_info['hostname']
@@ -265,35 +262,35 @@ op.db_info = {'username' : 'root',
               'password' : 'tassio25789',
               'hostname' : '127.0.0.1'}
 
-op.read_db()
+if __name__ == "__main__":
+    op.read_db()
+    #op.read_csv('TEST 15 PARTS')
+    #op.get_data_csv()
+    #print(op.data)
+    # PLOT RAW DATA
+    plt.plot(op.data.iloc[:]['ID'].to_numpy(), op.data.iloc[:]['acc_1_x'].to_numpy(), 'k')
+    op.treat_data()
+    op.separate_by_zeros()
+    op.define_cycles()
 
-#op.read_csv('TEST 15 PARTS')
-#op.get_data_csv()
-#print(op.data)
-# PLOT RAW DATA
-plt.plot(op.data.iloc[:]['ID'].to_numpy(), op.data.iloc[:]['acc_1_x'].to_numpy(), 'k')
-op.treat_data()
-op.separate_by_zeros()
-op.define_cycles()
+    # Print parts number
+    #print("NUMBER OF SPACES: " + str(op.cycle_counter[-1]/2))
 
-# Print parts number
-#print("NUMBER OF SPACES: " + str(op.cycle_counter[-1]/2))
+    op.flag_rest()
 
-op.flag_rest()
+    #print(op.data_rest_flagged)
 
-#print(op.data_rest_flagged)
+    op.get_results_cycle()
+    #print(op.results)
+    op.insert_in_db()
 
-op.get_results_cycle()
-#print(op.results)
-op.insert_in_db()
+    # PLOT SPACES
+    plt.plot(op.data.iloc[:]['ID'].to_numpy(), op.spaces, 'c')
+    # PLOT FILTERED DATA
+    plt.plot(op.data.iloc[:]['ID'].to_numpy(), op.data.iloc[:]['acc_1_x'].to_numpy(), 'r')
+    # PLOT ZEROS COUNTER
+    #plt.plot(op.data.iloc[:]['ID'].to_numpy(), op.conseq_zero, 'b', lw = 0.2)
 
-# PLOT SPACES
-plt.plot(op.data.iloc[:]['ID'].to_numpy(), op.spaces, 'c')
-# PLOT FILTERED DATA
-plt.plot(op.data.iloc[:]['ID'].to_numpy(), op.data.iloc[:]['acc_1_x'].to_numpy(), 'r')
-# PLOT ZEROS COUNTER
-#plt.plot(op.data.iloc[:]['ID'].to_numpy(), op.conseq_zero, 'b', lw = 0.2)
-
-plt.xlabel('Samples')
-plt.ylabel('m/s')
-plt.show()
+    plt.xlabel('Samples')
+    plt.ylabel('m/s')
+    plt.show()
