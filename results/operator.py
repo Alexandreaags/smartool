@@ -15,7 +15,7 @@ class Operator():
         # Flag for counting
         self.cycle_counter_flag = False
         # Number of samples read in a run
-        self.nr_samples = 2000
+        self.nr_samples = 4000
         # Database connection
         self.db_info : {
             'username' : '',
@@ -78,7 +78,7 @@ class Operator():
 
         if self.data.shape[0] == 0:
             return 0
-
+        
         # Consecutives zeroes array
         self.conseq_zero = np.zeros(len(self.data))
         # Spaces between movements array
@@ -257,12 +257,11 @@ class Operator():
         self.results.to_sql(name='sql_results', con=dbConnection, schema='arduino', if_exists='append', index=False)
         dbConnection.close()        
 
-op = Operator()
-op.db_info = {'username' : 'root',
+if __name__ == "__main__":
+    op = Operator()
+    op.db_info = {'username' : 'root',  
               'password' : 'tassio25789',
               'hostname' : '127.0.0.1'}
-
-if __name__ == "__main__":
     op.read_db()
     #op.read_csv('TEST 15 PARTS')
     #op.get_data_csv()
@@ -280,9 +279,9 @@ if __name__ == "__main__":
 
     #print(op.data_rest_flagged)
 
-    op.get_results_cycle()
-    #print(op.results)
-    op.insert_in_db()
+    op.get_results()
+    print(op.results)
+    #op.insert_in_db()
 
     # PLOT SPACES
     plt.plot(op.data.iloc[:]['ID'].to_numpy(), op.spaces, 'c')

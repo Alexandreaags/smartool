@@ -1,4 +1,5 @@
 from Smartool.results.operator import Operator
+import matplotlib.pyplot as plt
 
 sumitomo = Operator()
 sumitomo.db_info = {'username' : 'root',
@@ -15,6 +16,10 @@ while(1):
     sumitomo.flag_rest()
     sumitomo.get_results_cycle()
     sumitomo.insert_in_db()
+    print(sumitomo.results)
 
-    cont += 1
     print(cont)
+    cont += 1
+    plt.xlabel('Samples')
+    plt.ylabel('m/s')
+    plt.show()
