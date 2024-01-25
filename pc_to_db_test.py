@@ -17,7 +17,7 @@ while(1):
     initial_time = 2
     final_time = 4
 
-    frame_2 = pd.DataFrame(data = [[cycle_nr, mean_cavity_temperature, mean_ambient_humidity, mean_cavity_temperature, 
+    frame_2 = pd.DataFrame(data = [[cycle_nr, mean_ambient_temperature, mean_ambient_humidity, mean_cavity_temperature, 
                                     mean_cavity_pressure, mean_closing_force, initial_time, final_time]], columns = ['cycle_nr', 'mean_ambient_temperature', 
                                                        'mean_ambient_humidity', 'mean_cavity_temperature', 
                                                        'mean_cavity_pressure', 'mean_closing_force', 
