@@ -1,9 +1,10 @@
-from Smartool.results.operator import Operator
+from results.operator import Operator
+# from Smartool.results.operator import Operator
 #import matplotlib.pyplot as plt
 
 sumitomo = Operator()
 sumitomo.db_info = {'username' : 'root',
-                    'password' : 'tassio25789',
+                    'password' : '',
                     'hostname' : '127.0.0.1'}
 
 cont = 1
@@ -20,3 +21,6 @@ while(1):
 
     print(cont)
     cont += 1
+    #plt.xlabel('Samples')
+    #plt.ylabel('m/s')
+    #plt.show()

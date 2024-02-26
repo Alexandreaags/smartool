@@ -248,7 +248,7 @@ class Operator():
 if __name__ == "__main__":
     op = Operator()
     op.db_info = {'username' : 'root',  
-              'password' : 'tassio25789',
+              'password' : '',
               'hostname' : '127.0.0.1'}
     op.read_db()
     #op.read_csv('TEST 15 PARTS')
