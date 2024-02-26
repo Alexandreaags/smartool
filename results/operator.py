@@ -23,15 +23,6 @@ class Operator():
             'hostname' : ''
         }
 
-    def read_csv(self, file_name):
-        self.data_path = {  
-            'TEST 3 PARTS'  : 'data/TEST-1-3PARTS-07-12-2023.csv',
-            'TEST 10 PARTS' : 'data/TEST-3-10PARTS-07-12-2023.csv',
-            'TEST 12 PARTS' : 'data/TEST-4-12PARTS-07-12-2023.csv',
-            'TEST 15 PARTS' : 'data/TEST-2-15PARTS-07-12-2023.csv'     
-        }
-        self.data = pd.read_csv(self.data_path[file_name], sep=";", header=0, decimal=',')
-
     def read_db(self):
         # Get final values of last calculated cycle
         sqlEngine = create_engine(('mysql+pymysql://' + 
@@ -76,19 +67,9 @@ class Operator():
 
         dbConnection.close()
 
-        if self.data.shape[0] == 0:
+        if self.data.shape[0] == 0: #if there is no data in dataframe, return 0
             return 0
         
-        # Consecutives zeroes array
-        self.conseq_zero = np.zeros(len(self.data))
-        # Spaces between movements array
-        self.spaces = np.zeros(len(self.data))
-        # Parts counter analyzing rest periods
-        self.cycle_counter = np.ones(len(self.data))
-
-    def get_data_csv(self):
-        # Invert Index
-        self.data = self.data[::-1].reset_index(drop=True)
         # Consecutives zeroes array
         self.conseq_zero = np.zeros(len(self.data))
         # Spaces between movements array
@@ -157,15 +138,6 @@ class Operator():
         self.cycle_ambient_temperature = 0
         self.cycle_ambient_humidity = 0
         self.cycle_cavity_temperature = 0
-        #self.cycle_cavity_pressure = 0
-        #self.cycle_closing_force = 0
-
-        #self.mean_ambient_temperature = 0
-        #self.mean_ambient_humidity = 0
-        #self.mean_cavity_temperature = 0
-        #self.mean_cavity_pressure = 0
-        #self.mean_closing_force = 0
-
         #Define actual cycle
         cycle = self.last_cycle_db + 1
 
@@ -181,9 +153,6 @@ class Operator():
             array_cavity_temperature = [0]
         last_ID = int(self.data_rest_flagged.loc[self.data_rest_flagged['cycle_nr'] == 0].loc[:, 'ID'].iloc[-1])
         
-        #array_cavity_pressure = self.data_rest_flagged.loc[[(self.data_rest_flagged['cycle_nr'] == cycle) & (self.data_rest_flagged['is_resting'] == 0)], ['']]
-        #array_closing_force = self.data_rest_flagged.loc[[(self.data_rest_flagged['cycle_nr'] == cycle) & (self.data_rest_flagged['is_resting'] == 0)], ['']]
-        
         #Define a dictionary with the values for a cycle
         new_row = {'cycle_nr'                   : cycle, 
                    'cycle_ambient_temperature'  : mean(array_ambient_temperature),
@@ -194,7 +163,24 @@ class Operator():
                    'last_ID'                    : last_ID}
         
         #Insert dictionary in Dataframe
-        self.results.loc[len(self.results)] = new_row
+        self.results.loc[len(self.results)] = new_row 
+    
+    def insert_in_db(self):
+        engine_config = 'mysql+pymysql://' + self.db_info['username'] + ':' + self.db_info['password'] + '@' + self.db_info['hostname']
+        engine = create_engine(engine_config, pool_recycle=3600)
+        dbConnection = engine.connect()
+        # if_exists='replace' will replace the table if it already exists. You can change it to 'append' if you want to add rows to an existing table.
+        self.results.to_sql(name='sql_results', con=dbConnection, schema='arduino', if_exists='append', index=False)
+        dbConnection.close()        
+
+    def read_csv(self, file_name):
+        self.data_path = {  
+            'TEST 3 PARTS'  : 'data/TEST-1-3PARTS-07-12-2023.csv',
+            'TEST 10 PARTS' : 'data/TEST-3-10PARTS-07-12-2023.csv',
+            'TEST 12 PARTS' : 'data/TEST-4-12PARTS-07-12-2023.csv',
+            'TEST 15 PARTS' : 'data/TEST-2-15PARTS-07-12-2023.csv'     
+        }
+        self.data = pd.read_csv(self.data_path[file_name], sep=";", header=0, decimal=',')
 
     def get_results(self):
         #Creating Results Dataframe to be further added in Database
@@ -247,15 +233,17 @@ class Operator():
             #Insert dictionary in Dataframe
             self.results.loc[len(self.results)] = new_row
             
-            cycle += 1 
-    
-    def insert_in_db(self):
-        engine_config = 'mysql+pymysql://' + self.db_info['username'] + ':' + self.db_info['password'] + '@' + self.db_info['hostname']
-        engine = create_engine(engine_config, pool_recycle=3600)
-        dbConnection = engine.connect()
-        # if_exists='replace' will replace the table if it already exists. You can change it to 'append' if you want to add rows to an existing table.
-        self.results.to_sql(name='sql_results', con=dbConnection, schema='arduino', if_exists='append', index=False)
-        dbConnection.close()        
+            cycle += 1
+
+    def get_data_csv(self):
+        # Invert Index
+        self.data = self.data[::-1].reset_index(drop=True)
+        # Consecutives zeroes array
+        self.conseq_zero = np.zeros(len(self.data))
+        # Spaces between movements array
+        self.spaces = np.zeros(len(self.data))
+        # Parts counter analyzing rest periods
+        self.cycle_counter = np.ones(len(self.data))
 
 if __name__ == "__main__":
     op = Operator()

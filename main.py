@@ -1,5 +1,5 @@
 from Smartool.results.operator import Operator
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 sumitomo = Operator()
 sumitomo.db_info = {'username' : 'root',
@@ -20,6 +20,3 @@ while(1):
 
     print(cont)
     cont += 1
-    plt.xlabel('Samples')
-    plt.ylabel('m/s')
-    plt.show()
