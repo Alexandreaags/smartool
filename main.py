@@ -4,7 +4,7 @@ from results.operator import Operator
 
 sumitomo = Operator()
 sumitomo.db_info = {'username' : 'root',
-                    'password' : 'tassio25789',
+                    'password' : 'ipk123456',
                     'hostname' : '127.0.0.1'}
 
 cont = 1
