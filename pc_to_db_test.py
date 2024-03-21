@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 import pandas as pd
 import random as rd
 from time import sleep
-
+#generate random data
 sqlEngine       = create_engine('mysql+pymysql://root:@127.0.0.1', pool_recycle=3600)
 dbConnection    = sqlEngine.connect()
 
