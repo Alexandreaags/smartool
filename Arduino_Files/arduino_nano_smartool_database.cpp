@@ -64,8 +64,8 @@ const int maxRequestsBeforeReconnect = 80;
 //////////////////////////////////////////////////////////////////////
 //                    WIFI CONNECTION
 /////// ENTER WIFI SSID AND PASSWORD
-char ssid[] = "tassito";     // your network SSID (name)
-char pass[] = "tassiooo";    // your network password (use for WPA, or use as key for WEP)
+char ssid[] = "SMARTOOL";     // your network SSID (name)
+char pass[] = "123456789";    // your network password (use for WPA, or use as key for WEP)
 int keyIndex = 0;            // your network key index number (needed only for WEP)
 
 int status = WL_IDLE_STATUS;

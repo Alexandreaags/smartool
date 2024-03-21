@@ -9,7 +9,7 @@ class Arduino {
     }
 
     function connect() {
-        $this->link = mysqli_connect('p:localhost', 'root', 'tassio25789') or die('Cannot connect to the DB');
+        $this->link = mysqli_connect('p:localhost', 'root', 'ipk123456') or die('Cannot connect to the DB');
         mysqli_select_db($this->link, 'arduino') or die('Cannot select the DB');
     }
     
