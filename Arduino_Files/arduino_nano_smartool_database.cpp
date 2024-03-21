@@ -85,8 +85,11 @@ int i=0;
 void setup(void) {
   // LIS3DH
   ////////////////////////////////////////////////////////////////////////////////////////////
-  Serial.begin(115200);
-  while (!Serial) delay(10);     // will pause Zero, Leonardo, etc until serial console opens
+  //               ATTENTION: THE ARDUINO DOES NOT WORK WITHOUT A SERIAL COMMUNICATION
+  //                          IF THIS TWO LINES ABOVE ARE UNCOMMENTED.
+  ////////////////////////////////////////////////////////////////////////////////////////////
+  //Serial.begin(115200);
+  //while (!Serial) delay(10);     // will pause Zero, Leonardo, etc until serial console opens
 
   dht.begin();
 
