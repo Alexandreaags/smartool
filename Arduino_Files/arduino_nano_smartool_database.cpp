@@ -19,12 +19,13 @@
 #define LIS3DH_CS 10
 
 // digital IO pins.
-#define MAXDO   16
-#define MAXCS   15
-#define MAXCLK  14
+// For thermocouple so no longer used 
+// #define MAXDO   16
+// #define MAXCS   15
+// #define MAXCLK  14
 
-// initialize the Thermocouple
-Adafruit_MAX31855 thermocouple(MAXCLK, MAXCS, MAXDO);
+// initialize the Thermocouple (no longer used)
+// Adafruit_MAX31855 thermocouple(MAXCLK, MAXCS, MAXDO);
 
 // software SPI
 //Adafruit_LIS3DH lis = Adafruit_LIS3DH(LIS3DH_CS, LIS3DH_MOSI, LIS3DH_MISO, LIS3DH_CLK);
@@ -41,7 +42,8 @@ float lastTemp = -100;
 float lastHum = -100;
 int timevar;
 
-double tempKistler1;
+double lastInnerTemp;
+// double tempKistler1;
 
 int aux1, aux2, counter=0;
 
@@ -181,20 +183,21 @@ void loop() {
       return;
     }
   }
-  tempKistler1 = thermocouple.readCelsius();
-  if (isnan(tempKistler1)) {
-    uint8_t e = thermocouple.readError();
-    if (e & MAX31855_FAULT_OPEN) tempKistler1 = -333;       //("FAULT: Thermocouple is open - no connections.");
-    if (e & MAX31855_FAULT_SHORT_GND) tempKistler1 = -444;  //("FAULT: Thermocouple is short-circuited to GND.");
-    if (e & MAX31855_FAULT_SHORT_VCC) tempKistler1 = -555;  //("FAULT: Thermocouple is short-circuited to VCC.");
-  }
+
+  // tempKistler1 = thermocouple.readCelsius();
+  // if (isnan(tempKistler1)) {
+  //   uint8_t e = thermocouple.readError();
+  //   if (e & MAX31855_FAULT_OPEN) tempKistler1 = -333;       //("FAULT: Thermocouple is open - no connections.");
+  //   if (e & MAX31855_FAULT_SHORT_GND) tempKistler1 = -444;  //("FAULT: Thermocouple is short-circuited to GND.");
+  //   if (e & MAX31855_FAULT_SHORT_VCC) tempKistler1 = -555;  //("FAULT: Thermocouple is short-circuited to VCC.");
+  // }
+
   /* Or....get a new sensor event, normalized */
   sensors_event_t event, a, g, temp, dht22;
   lis.getEvent(&event);
   mpu.getEvent(&a, &g, &temp);
   // Temperature and humidity
-  if (millis() - timevar > 2000)
-  {
+  if (millis() - timevar > 2000) {
     dht.temperature().getEvent(&dht22);
     if (isnan(dht22.temperature)) {
       lastTemp = -100;
@@ -211,6 +214,16 @@ void loop() {
     }
     timevar = millis();
   }
+
+  // tool inner temperature (measured every second)
+  if (millis() - timevar > 1000) {
+    // den Wert vom Pin A0 einlesen
+    int KistlerTemp = analogRead(A0) // Pin, der gelesen werden soll: Pin A0
+    // Umrechnung des gelesenen Werts in Grad Celsius
+    float innerTemp = (KistlerTemp / 4095) * 400.0 ; //400℃ ist der maximale Messbereich
+    lastInnerTemp = innerTemp;
+  }
+
   /////////////////////////
   //Serial.print("GET /testcode/arduino.php?data_1=");
   client.print("GET /testcode/arduino.php?data_1=");     //YOUR URL
@@ -246,8 +259,8 @@ void loop() {
   Serial.print(lastHum);
   client.print("&data_9=");
   Serial.print("&data_9=");
-  client.print(tempKistler1);
-  Serial.print(tempKistler1);
+  client.print(lastInnerTemp);
+  Serial.print(lastInnerTemp);
   client.print("&data_10=");
   Serial.print("&data_10=");
   client.print(NULL);

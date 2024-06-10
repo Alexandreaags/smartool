@@ -7,9 +7,6 @@
  This example is written for a network using WPA encryption. For
  WEP or WPA, change the WiFi.begin() call accordingly.
 
- This example is written for a network using WPA encryption. For
- WEP or WPA, change the WiFi.begin() call accordingly.
-
  Circuit:
  * Board with NINA module (Arduino MKR WiFi 1010, MKR VIDOR 4000 and Uno WiFi Rev.2)
 
