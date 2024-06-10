@@ -40,6 +40,10 @@ DHT_Unified dht(DHTPIN, DHTTYPE);
 float lastTemp = -100;
 float lastHum = -100;
 float lastInnerTemp = -100;
+float lastPressure1 = 0;
+float lastPressure2 = 0;
+float lastClosingForce1 = 0;
+float lastclosingForce2 = 0;
 int timevar;
 
 // double tempKistler1;
@@ -114,7 +118,6 @@ void setup(void) {
 
   // tool inner temperature
   analogReadResolution(12);
- 
 
   Serial.println("");
   //delay(100);
@@ -167,11 +170,35 @@ void loop() {
 
   // tool inner temperature every second
   if (millis() - timevar > 1000) {
-    // den Wert vom Pin A0 einlesen
-    int KistlerTemp = analogRead(A0) // Pin, der gelesen werden soll: Pin A0
-    // Umrechnung des gelesenen Werts in Grad Celsius
-    float innerTemp = (KistlerTemp / 4095) * 400.0 ; //400℃ ist der maximale Messbereich
+    int KistlerTemp = analogRead(A0);
+    float innerTemp = (KistlerTemp / 4095) * 400.0 ; //400°C ist der maximale Messbereich
     lastInnerTemp = innerTemp;
+  }
+
+  if (millis() - timevar > 1000) {
+    int KistlerDruck1 = analogRead(A1);
+    float innerPressure = (KistlerDruck1 / 4095) * 2000.0 ; // 2000 kPa ist der maximale Messbereich
+    lastPressure1 = innerPressure;
+  }
+
+  if (millis() - timevar > 1000) {
+    int KistlerDruck2 = analogRead(A2);
+    float innerPressure = (KistlerDruck2 / 4095) * 2000.0 ; // 2000 kPa ist der maximale Messbereich
+    lastPressure2 = innerPressure;
+  }
+
+  // max closing force is 100 kN
+  if (millis() - timevar > 1000) {
+    int Schließkraft1 = analogRead(A6);
+    float closingForce = (Schließkraft1 / 4095) * 100.0 ; // 2000 kPa ist der maximale Messbereich
+    lastClosingForce1 = closingForce;
+  }
+
+  // max closing force is 7 kN
+  if (millis() - timevar > 1000) {
+    int Schließkraft2 = analogRead(A7);
+    float closingForce= (Schließkraft2 / 4095) * 7.0 ;
+    lastClosingForce2 = closingForce;
   }
 
   /* Display the results (acceleration is measured in m/s^2) */
@@ -194,6 +221,14 @@ void loop() {
   Serial.print(lastHum);
   Serial.print(" ");
   Serial.print(lastInnerTemp);
+  Serial.print(" ");
+  Serial.print(lastPressure1);
+  Serial.print(" ");
+  Serial.print(lastPressure2);
+  Serial.print(" ");
+  Serial.print(lastClosingForce1);
+  Serial.print(" ");
+  Serial.print(lastClosingForce2);
   Serial.print(" ");
   Serial.print(millis());
 
